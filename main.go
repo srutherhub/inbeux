@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	msg "inbeux/internal/message"
+	"inbeux/internal/platform"
 	"inbeux/internal/platform/db"
 	"inbeux/internal/user"
 	"log"
@@ -30,6 +31,9 @@ func main() {
 
 	defer close()
 
+	baseController := baseController()
+	server.RegisterController(*baseController)
+
 	userRepository := user.NewRepository(dbConn)
 	userService := user.NewService(userRepository)
 
@@ -54,4 +58,12 @@ func messageController(es *msg.MessageService, us msg.UserProvider) *c.Controlle
 	messageController.RegisterRoute(c.Route{Method: "POST", Path: "/receiver", Handler: msg.EmailReceiverHandler(es, us)})
 
 	return messageController
+}
+
+func baseController() *c.Controller {
+	baseController := c.New()
+	baseController.SetBase("")
+	baseController.RegisterRoute(c.Route{Method: "GET", Path: "/healthz", Handler: platform.HealthzHandler()})
+
+	return baseController
 }

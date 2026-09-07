@@ -22,17 +22,17 @@ func (ms *MessageService) ReceiveEmail(ctx context.Context, userId int64, messag
 }
 
 func (ms *MessageService) StartPendingMessagesBatch(ctx context.Context) {
-	workerDefinition := &pendingMessagesWorker{messageService: ms}
+	workerDefinition := &pendingMessagesWorker{query: ms.query}
 	worker := utils.NewWorker(workerDefinition, 25)
 	worker.Start(ctx, 5*time.Second)
 }
 
 type pendingMessagesWorker struct {
-	messageService *MessageService
+	query *MessageRepository
 }
 
 func (esw *pendingMessagesWorker) GetTasks(ctx context.Context) ([]messagedb.Message, error) {
-	messages, err := esw.messageService.query.GetPendingMessages(ctx)
+	messages, err := esw.query.GetPendingMessages(ctx)
 
 	if err != nil {
 		return []messagedb.Message{}, fmt.Errorf("failed to retrieve pending message: %w", err)
@@ -41,6 +41,7 @@ func (esw *pendingMessagesWorker) GetTasks(ctx context.Context) ([]messagedb.Mes
 	return messages, nil
 }
 
+// TODO
 func (esw *pendingMessagesWorker) Process(ctx context.Context, message messagedb.Message) error {
 	fmt.Println(message)
 	return nil
