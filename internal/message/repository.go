@@ -36,3 +36,15 @@ func (mr *MessageRepository) CreateMessage(ctx context.Context, userId int64, me
 
 	return err
 }
+
+func (mr *MessageRepository) GetPendingMessages(ctx context.Context) ([]messagedb.Message, error) {
+
+	var NUM_MESSAGES int32 = 100
+	messages, err := mr.queries.GetPendingMessages(ctx, NUM_MESSAGES)
+
+	if err != nil {
+		return []messagedb.Message{}, nil
+	}
+
+	return messages, nil
+}

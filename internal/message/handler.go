@@ -67,6 +67,7 @@ func EmailReceiverHandler(messageService *MessageService, userService UserProvid
 				if err != nil {
 					slog.Error("failed to retrieve user", "msg", err.Error())
 					http.Error(w, "failed to retrieve user", http.StatusInternalServerError)
+					return
 				}
 
 			} else {

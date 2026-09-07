@@ -6,6 +6,9 @@ import (
 	"inbeux/internal/platform/db"
 	"inbeux/internal/user"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	c "github.com/srutherhub/web-app/controller"
 	s "github.com/srutherhub/web-app/server"
@@ -15,7 +18,8 @@ func main() {
 	serverConfig := s.InitServerCfg("8080")
 	server := s.New()
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 	dbConn, close, err := db.InitializeDb(ctx)
 
 	if err != nil {
@@ -34,10 +38,16 @@ func main() {
 	messageController := messageController(messageService, userService)
 	server.RegisterController(*messageController)
 
-	server.Start(serverConfig)
+	go messageService.StartPendingMessagesBatch(ctx)
+
+	go func() {
+		server.Start(serverConfig)
+	}()
+
+	<-ctx.Done()
 }
 
-func messageController(es *msg.MessageService, us *user.UserService) *c.Controller {
+func messageController(es *msg.MessageService, us msg.UserProvider) *c.Controller {
 
 	messageController := c.New()
 	messageController.SetBase("/email")

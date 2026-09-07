@@ -10,7 +10,7 @@ import (
 )
 
 const createMessage = `-- name: CreateMessage :exec
-INSERT INTO messages (user_id, message_id, source) VALUES ($1, $2, $3)
+INSERT INTO messages (user_id, message_id, source) VALUES ($1, $2, $3) ON CONFLICT (message_id) DO NOTHING
 `
 
 type CreateMessageParams struct {
@@ -41,4 +41,45 @@ func (q *Queries) GetMessageByExternalId(ctx context.Context, messageID string) 
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getPendingMessages = `-- name: GetPendingMessages :many
+SELECT id, user_id, message_id, source, status, updated_at, created_at FROM messages WHERE status = 'pending' ORDER BY created_at ASC LIMIT $1 FOR UPDATE SKIP LOCKED
+`
+
+func (q *Queries) GetPendingMessages(ctx context.Context, limit int32) ([]Message, error) {
+	rows, err := q.db.Query(ctx, getPendingMessages, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.MessageID,
+			&i.Source,
+			&i.Status,
+			&i.UpdatedAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateMessageToClassified = `-- name: UpdateMessageToClassified :exec
+UPDATE messages SET status = 'pending' WHERE message_id = $1
+`
+
+func (q *Queries) UpdateMessageToClassified(ctx context.Context, messageID string) error {
+	_, err := q.db.Exec(ctx, updateMessageToClassified, messageID)
+	return err
 }
