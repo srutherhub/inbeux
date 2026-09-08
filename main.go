@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"inbeux/internal/agent"
 	msg "inbeux/internal/message"
 	"inbeux/internal/platform"
 	"inbeux/internal/platform/db"
@@ -42,7 +43,15 @@ func main() {
 	messageController := messageController(messageService, userService)
 	server.RegisterController(*messageController)
 
-	go messageService.StartPendingMessagesBatch(ctx)
+	//go messageService.StartPendingMessagesBatch(ctx)
+
+	agentService, err := agent.New()
+
+	if err != nil {
+		panic(err)
+	}
+
+	agentService.ClassifyMessage("My name is Sam Rutherford, set my timezone to eastern time")
 
 	go func() {
 		server.Start(serverConfig)
@@ -64,6 +73,5 @@ func baseController() *c.Controller {
 	baseController := c.New()
 	baseController.SetBase("")
 	baseController.RegisterRoute(c.Route{Method: "GET", Path: "/healthz", Handler: platform.HealthzHandler()})
-
 	return baseController
 }

@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "properties": {
+    "task": {
+      "type": "string",
+      "enum": [
+        "create_reminder",
+        "get_all_reminders",
+        "delete_reminder",
+        "update_user_timezone",
+        "update_user_communication_preference",
+        "update_user_name",
+        "unknown"
+      ],
+      "description": "The classified action category of the incoming user message."
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Confidence score between 0.0 and 1.0."
+    },
+    "extracted_parameters": {
+      "type": "object",
+      "description": "Parameters extracted from the message. Empty strings if not present.",
+      "properties": {
+        "reminder_text": {
+          "type": "string",
+          "description": "Content of the reminder if setting or updating a reminder."
+        },
+        "target_time": {
+          "type": "string",
+          "description": "Date, time, or relative time string if provided."
+        },
+        "reminder_id": {
+          "type": "string",
+          "description": "ID or reference of the reminder if deleting or updating."
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone string (e.g. 'Eastern Time', 'America/New_York') if provided."
+        },
+        "communication_preference": {
+          "type": "string",
+          "description": "Preferred channel (e.g. 'email', 'sms', 'push') if provided."
+        },
+        "user_name": {
+          "type": "string",
+          "description": "User's name if updating profile details."
+        }
+      },
+      "required": [
+        "reminder_text",
+        "target_time",
+        "reminder_id",
+        "timezone",
+        "communication_preference",
+        "user_name"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": ["task", "confidence", "extracted_parameters"],
+  "additionalProperties": false
+}

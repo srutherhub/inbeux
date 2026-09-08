@@ -7,6 +7,8 @@ package user
 import (
 	"database/sql/driver"
 	"fmt"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserStatus string
@@ -57,5 +59,5 @@ type User struct {
 	Email     string
 	Timezone  string
 	Status    UserStatus
-	CreatedAt interface{}
+	CreatedAt pgtype.Timestamp
 }

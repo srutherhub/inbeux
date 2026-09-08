@@ -22,8 +22,9 @@ func (ms *MessageService) ReceiveEmail(ctx context.Context, userId int64, messag
 }
 
 func (ms *MessageService) StartPendingMessagesBatch(ctx context.Context) {
+	var NUM_WORKERS int = 20
 	workerDefinition := &pendingMessagesWorker{query: ms.query}
-	worker := utils.NewWorker(workerDefinition, 25)
+	worker := utils.NewWorker(workerDefinition, NUM_WORKERS)
 	worker.Start(ctx, 5*time.Second)
 }
 

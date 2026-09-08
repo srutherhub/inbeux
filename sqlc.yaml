@@ -16,3 +16,11 @@ sql:
         package: "message"
         out: "internal/message/db"
         sql_package: "pgx/v5"
+  - engine: "postgresql"
+    schema: "internal/action/schema.sql"
+    queries: "internal/action/query.sql"
+    gen:
+      go:
+        package: "action"
+        out: "internal/action/db"
+        sql_package: "pgx/v5"
